@@ -1,5 +1,5 @@
 server:
-  port: 8083
+  port: 9020
 
 spring:
   application:
@@ -31,7 +31,7 @@ eureka:
     prefer-ip-address: true
   client:
     service-url:
-      defaultZone: http://127.0.0.1:8080/eureka/
+      defaultZone: http://127.0.0.1:8090/eureka,http://127.0.0.1:8091/eureka,http://127.0.0.1:8092/eureka
 
 resilience4j:
   retry: #请求重试

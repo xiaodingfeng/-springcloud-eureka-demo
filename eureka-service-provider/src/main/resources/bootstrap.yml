@@ -1,13 +1,14 @@
 server:
-  port: 8081
+  port: 9040
 spring:
-  cloud:
-    config:
-      discovery:
-        enabled: true # 通过服务发现的方式去找配置中心
-        service-id: springcloud-config-server # 配置中心的名字，直接配置名称可以在配置中心集群的时候实现负载均衡
-      profile: dev # 对应配置中心文件的${profile}部分
-      name: bootstrap
+# 如果启用配置中心，取消注释
+#  cloud:
+#    config:
+#      discovery:
+#        enabled: true # 通过服务发现的方式去找配置中心
+#        service-id: springcloud-config-server # 配置中心的名字，直接配置名称可以在配置中心集群的时候实现负载均衡
+#      profile: dev # 对应配置中心文件的${profile}部分
+#      name: bootstrap
   application:
     name: eureka-service-provider
 eureka:
@@ -17,7 +18,7 @@ eureka:
     prefer-ip-address: true
   client:
     service-url:
-      defaultZone: http://127.0.0.1:8080/eureka/
+      defaultZone: http://127.0.0.1:8090/eureka,http://127.0.0.1:8091/eureka,http://127.0.0.1:8092/eureka
 
 management:
   endpoints:

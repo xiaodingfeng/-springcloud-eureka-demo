@@ -24,6 +24,7 @@ public class CartController {
 
     @PostMapping("/cart")
     public String addCart() {
+        LOGGER.info("被调用了");
         return "hello world!";
     }
 

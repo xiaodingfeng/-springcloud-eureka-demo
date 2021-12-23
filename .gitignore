@@ -1,1 +1,7 @@
 .idea/
+eureka-server/target
+eureka-service-consume/target
+eureka-service-gateway/target
+eureka-service-provider/target
+springcloud-config-server/target
+springcloud-demo.iml
