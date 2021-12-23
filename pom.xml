@@ -13,6 +13,7 @@
         <module>eureka-service-provider</module>
         <module>eureka-service-consume</module>
         <module>eureka-service-gateway</module>
+        <module>springcloud-config-server</module>
     </modules>
 
     <groupId>org.xiaobai</groupId>

@@ -3,6 +3,9 @@ package com.xiaobai.eurekaservicegateway;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * @author dingfeng.xiao
+ */
 @SpringBootApplication
 public class EurekaServiceGatewayApplication {
 

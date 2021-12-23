@@ -10,6 +10,19 @@ spring:
         locator:
           enabled: true  #开启根据微服务名称自动转发
           lower-case-service-id: true  #微服务名称以小写形式呈现
+      routes:
+        - id: eureka-service-consume
+          uri: lb://eureka-service-consume
+          predicates:
+            - Path=/eureka-service-consume/**
+          filters:
+      #            - StripPrefix=1  #前缀， 在当前路径匹配中表示去掉第一个前缀 /data-service2
+      default-filters: #全局过滤,可以配置全局过滤,也可以给具体的路由配置过滤
+        - StripPrefix=1  #前缀， 在当前路径匹配中表示去掉第一个前缀 /consul-service
+        - name: CircuitBreaker #使用resilience4j断路器
+          args:
+            name: fallback  #自定义断路器配置
+            fallbackUri: forward:/circuitBreaker/fallback #异常跳转 resilience4j中使用的fallbackMethod优先级大于这个
 
 eureka:
   instance:
@@ -20,13 +33,58 @@ eureka:
     service-url:
       defaultZone: http://127.0.0.1:8080/eureka/
 
+resilience4j:
+  retry: #请求重试
+    retry-aspect-order: 396 # 表示Retry优先级(级别高于比如ratelimiter bulkhead timelimiter) 值越小 优先级 越高
+    configs:
+      myConfig: # 设置组名 可以配置不同的 Retry 策略，给不同的策略分别取一个名字， default 就是一个 Retry 策略的名字 默认名称就是default
+        maxRetryAttempts: 5 # 表示最大重试次数
+        waitDuration: 500 # 表示下一次重试等待时间，最小为100 ms
+        eventConsumerBufferSize: 10 #重试事件缓冲区大小
+        enableExponentialBackoff: true #是否开启指数退避抖动算法，当一次调用失败后，如果在相同的时间间隔内发起重试，有可能发生连续的调用失败，因此可以开启指数退避抖动算法
+        exponentialBackoffMultiplier: 1.1 # 间隔乘数(场景: 正好每次间隔为1的时候卡顿 它就有用了 间隔就变了 例如 1 1.1 1.21....)
+        enableRandomizedWait: false #下次重试的时间间隔是否随机
+        retryExceptions: #需要重试的异常
+          - java.lang.Exception
+        ignoreExceptions: #忽略的异常
+          - java.lang.IllegalStateException
+    instances:
+      retryA:
+        baseConfig: myConfig
+  circuitbreaker: #断路器
+    circuit-breaker-aspect-order: 397
+    configs: #通用配置
+      myConfig: # 断路器策略的命名 断路器系统默认配置
+        ringBufferSizeInClosedState: 5 #断路器关闭状态下，环形缓冲区的大小
+        ringBufferSizeInHalfOpenState: 3 #断路器处于 HalfOpen 状态下，环形缓冲区的大小
+        failureRateThreshold: 50 #失败率，错误率达到或高于该值则进入open状态
+        slowCallDurationThreshold: 60s #慢调用阀值，请求执行的时间大于该值时会标记为慢调用
+        slowCallRateThreshold: 100 #慢调用熔断阀值，当慢调用率达到或高于该值时，进入open状态
+        slidingWindowSize: 100 #状态滚动收集器大小，close状态时收集多少请求状态，用于计算失败率。
+        registerHealthIndicator: true #是否开启健康检测
+        #状态收集器类型
+        #COUNT_BASED：根据数量计算，slidingWindowSize为次数
+        #TIME_BASED：根据时间计算，slidingWindowSize为秒数
+        slidingWindowType: COUNT_BASED
+        minimumNumberOfCalls: 10 #计算错误率的最小请求数，不足最小调用次数不会触发任何变化。
+        automaticTransitionFromOpenToHalfOpenEnabled: false #是否自动进入halfOpen状态，默认false-一定时间后进入halfopen，ture-需要通过接口执行。
+        permittedNumberOfCallsInHalfOpenState: 10 #进入halfOpen状态时，可以被调用次数，就算这些请求的失败率，低于设置的失败率变为close状态，否则变为open。
+        waitDurationInOpenState: 60s #open状态变为half状态需要等待的时间，即熔断多久后开始尝试访问被熔断的服务。
+        eventConsumerBufferSize: 10 #事件缓冲区大小
+        #        recordFailurePredicate: com.kittlen.cloud.config.RecordFailurePredicate #什么样的异常会被认定为请求失败 ??
+        recordExceptions: #被计为失败的异常集合，默认情况下所有异常都为失败。
+          - java.lang.Exception
+        ignoreExceptions: #不会被计为失败的异常集合，优先级高于recordExceptions。
+          - java.lang.IllegalStateException
+    instances: #实例化熔断器,用于aop式调用
+      backendA:
+        baseConfig: myConfig
+        minimumNumberOfCalls: 3 #计算错误率的最小请求数，不足最小调用次数不会触发任何变化。
+        waitDurationInOpenState: 6s #open状态变为half状态需要等待的时间，即熔断多久后开始尝试访问被熔断的服务。
+
+
 management:
   endpoints:
     web:
       exposure:
         include: refresh,health,info
-info:
-  app.name: taosun-microservicecloud
-  company.name: www.taosun.com
-  build.artifactId: ${project.artifactId}
-  build.version: ${project.version}

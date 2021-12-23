@@ -1,29 +1,29 @@
 server:
-  port: 8082
+  port: 8087
 
 spring:
   application:
-    name: eureka-service-consume
+    name: springcloud-config-server
+
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://gitee.com/xiaodingfeng/common-config.git
+          default-label: master #默认是master 分支
 
 eureka:
   instance:
-    appname: eureka-service-consume
+    appname: springcloud-config-server
     instance-id: ${spring.application.name}:${random.value}
     prefer-ip-address: true
   client:
     service-url:
       defaultZone: http://127.0.0.1:8080/eureka/
 
-feign:
-  client:
-    config:
-      default:
-        connectTimeout: 12000
-        readTimeout: 12000
-        loggerLevel: basic
-
 management:
   endpoints:
     web:
       exposure:
         include: refresh,health,info
+
