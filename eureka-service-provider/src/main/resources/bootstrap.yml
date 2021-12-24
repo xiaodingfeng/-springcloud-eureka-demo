@@ -1,7 +1,12 @@
 server:
   port: 9040
 spring:
-# 如果启用配置中心，取消注释
+  rabbitmq:
+    host: 192.168.247.130
+    port: 5672          #mq服务器port,默认为5672
+    username: guest     #mq服务器username,默认为gust
+    password: guest     #mq服务器password,默认为guest
+  # 如果启用配置中心，取消注释
 #  cloud:
 #    config:
 #      discovery:
