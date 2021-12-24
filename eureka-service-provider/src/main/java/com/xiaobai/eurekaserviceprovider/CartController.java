@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -29,12 +30,14 @@ public class CartController {
     @Value("${spring.application.name}")
     private String value;
 
-    @Autowired
+    @Resource
     RabbitTemplate rabbitTemplate;
 
+    @Resource
+    AdminDao adminDao;
 
     @PostMapping("/cart")
-    public String addCart() {
+    public Admin addCart() {
 
         ConcurrentMap<Integer,Object> myMap = new ConcurrentHashMap<>(4);
         myMap.put(0,"神司马懿");
@@ -43,7 +46,7 @@ public class CartController {
         myMap.put(3,"骆统");
         rabbitTemplate.convertAndSend("amq.direct","2",myMap);
         LOGGER.info("被调用了");
-        return "hello world!";
+        return adminDao.get();
     }
 
     @RabbitListener(queues = "swl.direct")

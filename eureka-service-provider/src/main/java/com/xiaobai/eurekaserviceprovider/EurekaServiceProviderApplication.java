@@ -19,8 +19,10 @@ public class EurekaServiceProviderApplication {
         return new Jackson2JsonMessageConverter();
     }
 
+
     public static void main(String[] args) {
         SpringApplication.run(EurekaServiceProviderApplication.class, args);
+
     }
 
 }
